@@ -1,4 +1,4 @@
-package com.wyg.erickwang.minewweeping10;
+package com.wyg.erickwang.minesweeping10;
 
 import android.app.Activity;
 import android.app.Dialog;

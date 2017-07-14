@@ -1,4 +1,4 @@
-package com.wyg.erickwang.minewweeping10;
+package com.wyg.erickwang.minesweeping10;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

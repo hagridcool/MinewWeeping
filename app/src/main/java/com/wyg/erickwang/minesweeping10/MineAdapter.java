@@ -1,4 +1,4 @@
-package com.wyg.erickwang.minewweeping10;
+package com.wyg.erickwang.minesweeping10;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
