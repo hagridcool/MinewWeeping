@@ -8,7 +8,9 @@
         android:id="@+id/btn_mine"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="#b4ad2d"
         android:text="M"
+        android:layout_margin="1dp"
         />
 
 </LinearLayout>

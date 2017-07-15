@@ -17,6 +17,25 @@ import java.util.List;
 public class MineAdapter extends RecyclerView.Adapter<MineAdapter.MineViewHolder> {
     private List<String> dataList;
     private ItemClickListener mItemClickListener;
+    private MineAdapter.MineViewHolder holder;
+
+    public void motifyPos(int position, int num_mine) {
+        dataList.set(position,num_mine + "");
+
+        notifyItemChanged(position);
+    }
+
+    public void motifyDataset(int [][] newDataset) {
+        dataList.clear();
+
+        for (int i=0; i<newDataset.length; i++){
+            for (int j=0; j<newDataset[i].length; j++){
+                dataList.add(newDataset[i][j] + "");
+            }
+        }
+
+        notifyAll();
+    }
 
     public interface ItemClickListener{
         void onItemClick(View view,int position);
@@ -35,7 +54,7 @@ public class MineAdapter extends RecyclerView.Adapter<MineAdapter.MineViewHolder
     @Override
     public MineAdapter.MineViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item,parent,false);
-        MineAdapter.MineViewHolder holder = new MineViewHolder(view);
+        holder = new MineViewHolder(view);
 
         return holder;
     }

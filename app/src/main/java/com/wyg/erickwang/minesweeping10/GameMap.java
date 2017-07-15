@@ -1,8 +1,13 @@
 package com.wyg.erickwang.minesweeping10;
 
 import android.content.Context;
+import android.util.Log;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 import java.util.Random;
 
 /**
@@ -22,6 +27,7 @@ public class GameMap {
     private int countMine = 0; //地雷总数目
 
     static int dir[][]=new int[][]{{-1,-1},{-1,0},{-1,1},{0,-1},{0,1},{1,-1},{1,0},{1,1}};
+    static int searchDir[][]=new int[][]{{-1,0},{0,-1},{0,1},{1,0}};
     public static final int MAP_MINE = 0; //表示有地雷
     public static final int MAP_BLANK = 1; //表示没有地雷，只是空白
     public static final int MAP_FLAG = 3; //表示插上小红旗
@@ -48,11 +54,11 @@ public class GameMap {
         this.row = row;
         this.col = col;
         mContext = context;
+        createBlankMap(); //创建空白地图，随机生成行和列，按照指定数量设置地雷
 
         if (count <= 0) {
             settingMine();
         } else {
-            createBlankMap(); //创建空白地图，随机生成行和列，按照指定数量设置地雷
             setttingMine(count);
         }
 
@@ -198,5 +204,63 @@ public class GameMap {
 
     public int[][] getCountPosition() {
         return countPosition;
+    }
+
+    /**
+     * 根据输入的位置输出该点周围所有空白区域的位置
+     * @param postion
+     * @return
+     */
+    public List<Integer> getCircleBlank(int postion){
+        List<Integer> list = new ArrayList<>();
+        Queue<Integer> queue = new LinkedList<>();
+
+        list.add(postion);
+        queue.offer(postion);
+
+        while(!queue.isEmpty()){
+            int pos = queue.poll();
+            int r = pos / col;
+            int c = pos % col;
+
+            Log.d("wyg1","current pos:" + postion + ":" + r +"x" + c);
+
+            for (int i=0; i<searchDir.length; i++){
+                int newRow = r + searchDir[i][0];
+                int newCol = c + searchDir[i][1];
+
+                if (newRow>=0 && newRow<row && newCol>=0 && newCol<col && map[newRow][newCol] == MAP_BLANK){
+                    int newPos = newRow * col + newCol;
+
+                    if (list.contains(newPos)) continue;
+
+                    list.add(newPos);
+                    queue.offer(newPos);
+                }
+            }
+        }
+
+
+        for (int i=0; i<list.size(); i++){
+            Log.d("wyg1", "circlePos：" + list.get(i));
+        }
+
+        return list;
+    }
+
+    /**
+     * 返回指定位置的地雷数
+     * @param postion
+     * @return
+     */
+    public int getNumOfMine(int postion){
+        int r = postion / col;
+        int c = postion % col;
+
+        if (countPosition[r][c] != 0){
+            return countPosition[r][c];
+        }else{
+            return 0;
+        }
     }
 }

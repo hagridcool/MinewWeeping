@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:inputType="number"
             android:textSize="20sp"
-            android:text="8"
+            android:text="6"
             android:hint="请输入正整数"
             />
     </LinearLayout>
@@ -52,8 +52,29 @@
             android:layout_height="wrap_content"
             android:inputType="number"
             android:textSize="20sp"
-            android:text="8"
+            android:text="6"
             android:hint="请输入正整数"
+            />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="地雷个数："
+            android:textSize="20dp"
+            />
+        <EditText
+            android:id="@+id/et_cnt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:textSize="20sp"
+            android:text="0"
+            android:hint="请输入整数,0表示随机设置"
             />
     </LinearLayout>
     <LinearLayout

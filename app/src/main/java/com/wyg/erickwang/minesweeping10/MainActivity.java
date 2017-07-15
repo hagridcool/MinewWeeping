@@ -1,5 +1,6 @@
 package com.wyg.erickwang.minesweeping10;
 
+import android.graphics.Color;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -19,7 +21,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button btn_open;
     private MineAdapter adapter;
     private List<String> dataList;
+    private int [][]map;
+    private int [][]countPosition; //用于记录每个点周围总的地雷数
+    private GameMap game;
+    private RecyclerView.LayoutManager layoutManager;
+    private int cntMine = 0; //雷区地雷个数
+    private int row = 0;
+    private int col = 0;
 
+    private static final String TAG = "wyg1";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,27 +45,56 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void showGame(int col) {
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerView_mine);
         adapter = new MineAdapter(dataList);
+        layoutManager = new GridLayoutManager(this,col);
         //recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setLayoutManager(new GridLayoutManager(this,col));
+        recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
         adapter.setItemClickListener(new MineAdapter.ItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-                Toast.makeText(MainActivity.this,dataList.get(position),Toast.LENGTH_SHORT).show();
+                //Toast.makeText(MainActivity.this,dataList.get(position),Toast.LENGTH_SHORT).show();
+                if (game.sweeping(position)){
+                    view.setBackgroundColor(Color.RED);
+
+                    Log.d(TAG, "雷:" + position);
+                } else {
+                    //view.setVisibility(View.INVISIBLE);
+
+                    List<Integer> posList;
+                    posList = game.getCircleBlank(position);
+
+                    for (int i=0; i<posList.size(); i++){
+                        View v = layoutManager.getChildAt(posList.get(i));
+                        v.setVisibility(View.INVISIBLE);
+                        int num_mine = game.getNumOfMine(position);
+                        adapter.motifyPos(position,num_mine);
+                        v.setBackgroundColor(Color.WHITE);
+                    }
+                    posList.clear();
+
+                    Log.d(TAG, "无雷" + position);
+                }
             }
         });
+
+
     }
 
+    private void sweeping() {
+        game = new GameMap(this,row,col,cntMine);
+        map = game.getMap();
+        countPosition = game.getCountPosition();
+
+        //adapter.motifyDataset(countPosition);
+    }
 
     private void initGame(final int flag){
-        final int[] row = new int[]{0};
-        final int[] col = new int[]{0};
-
         final View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog,null);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(dialogView);
         final EditText et_row = dialogView.findViewById(R.id.et_row);
         final EditText et_col = dialogView.findViewById(R.id.et_col);
+        final EditText et_cnt = dialogView.findViewById(R.id.et_cnt);
         Button btn_begin = dialogView.findViewById(R.id.btn_begin);
         Button btn_cancel = dialogView.findViewById(R.id.btn_cancel);
 
@@ -67,21 +106,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btn_begin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                row[0] = Integer.parseInt(et_row.getText().toString().trim());
-                col[0] = Integer.parseInt(et_col.getText().toString().trim());
+                row = Integer.parseInt(et_row.getText().toString().trim());
+                col = Integer.parseInt(et_col.getText().toString().trim());
+                cntMine = Integer.parseInt(et_cnt.getText().toString().trim());
 
-                if (row[0] <= 0 || col[0] <= 0){
+                if (row <= 0 || col <= 0){
                     Toast.makeText(MainActivity.this,"请输入大于0的整数",Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                Log.d("wyg1",et_row.getText().toString().trim() + "X" + et_col.getText().toString().trim());
+                if (cntMine > row * col){
+                    Toast.makeText(MainActivity.this,"请输入地雷个数",Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                Log.d("wyg1",et_row.getText().toString().trim() + " x " + et_col.getText().toString().trim());
 
                 dialog.cancel();
 
-                initGameData(row[0],col[0]);
-                showGame(col[0]);
-
+                initGameData(row,col);
+                showGame(col);
+                sweeping();
             }
         });
 
@@ -101,8 +146,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void initGameData(int row,int col) {
         dataList = new ArrayList<>();
 
-        for (int i=1; i<=row * col; i++){
-            dataList.add(i + "");
+        for (int i=0; i<row * col; i++){
+            dataList.add("");
         }
     }
 
