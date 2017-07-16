@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="80dp">
+    <TextView
+        android:id="@+id/tv_showTime"
+        android:layout_width="100dp"
+        android:layout_height="80dp"
+        android:gravity="center"
+        android:text="显示时间"
+        android:textSize="20sp"
+        />
+    <ImageView
+        android:id="@+id/img_flag"
+        android:layout_width="0dp"
+        android:layout_height="80dp"
+        android:src="@drawable/img_ready"
+        android:contentDescription="显示图片表示成功或失败"
+        android:layout_weight="1"
+        />
+
+    <TextView
+        android:id="@+id/tv_cntMine"
+        android:layout_width="0dp"
+        android:layout_height="80dp"
+        android:gravity="center"
+        android:text="显示地雷个数"
+        android:layout_weight="1"
+        android:textSize="20sp"
+        />
+</LinearLayout>

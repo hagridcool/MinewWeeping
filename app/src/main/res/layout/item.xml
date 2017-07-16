@@ -4,13 +4,14 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <Button
-        android:id="@+id/btn_mine"
+    <TextView
+        android:id="@+id/tv_mine"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#b4ad2d"
+        android:layout_height="40dp"
         android:text="M"
+        android:gravity="center"
         android:layout_margin="1dp"
+        android:textColor="#000000"
         />
 
 </LinearLayout>

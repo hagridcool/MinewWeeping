@@ -4,11 +4,12 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:icon="@mipmap/img_icon"
+        android:label="MineSweeping"
+        android:roundIcon="@mipmap/img_icon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
         <activity android:name="com.wyg.erickwang.minesweeping10.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

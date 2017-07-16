@@ -25,6 +25,8 @@ public class GameMap {
     private int [][]countPosition; //用于记录每个点周围总的地雷数
     static int [][]visited;
     private int countMine = 0; //地雷总数目
+    private List<Integer> blankPostionList; //保存地图中所有的空白位置
+    private List<Integer> openedBlankPostionList; //保存所有被打开的位置
 
     static int dir[][]=new int[][]{{-1,-1},{-1,0},{-1,1},{0,-1},{0,1},{1,-1},{1,0},{1,1}};
     static int searchDir[][]=new int[][]{{-1,0},{0,-1},{0,1},{1,0}};
@@ -90,6 +92,20 @@ public class GameMap {
         }
     }
 
+    public int getCntMine(){
+        int cntMine = 0;
+
+        for (int i=0; i<row; i++){
+            for (int j=0; j<col; j++){
+                if (map[i][j] == MAP_MINE){
+                    cntMine ++;
+                }
+            }
+        }
+
+        return cntMine;
+    }
+
     //对指定位置布雷
     private void settingMine(int row,int col){
         if (row >= this.row || row < 0 || col >= this.col || col < 0) {
@@ -122,12 +138,11 @@ public class GameMap {
      * 执行扫雷操作，根据输入的方块序号确定雷块
      * @param index
      */
-    public boolean sweeping(int index){
+    public boolean isMine(int index){
         //将序号转为行和列
         int r = index / col;
         int c = index % col;
 
-        trvalMap();
         if (map[r][c] == MAP_MINE){
             return true;
         } else {
@@ -141,8 +156,7 @@ public class GameMap {
      * @param col
      * @return
      */
-    public boolean sweeping(int row,int col){
-        trvalMap();
+    public boolean isMine(int row,int col){
         if (map[row][col] == MAP_MINE){
             return true;
         } else {
@@ -151,7 +165,7 @@ public class GameMap {
     }
 
 
-    private void trvalMap(){
+    public void trvalMap(){
         this.countPosition = new int[row][];
         this.visited = new int[row][];
 
@@ -159,7 +173,20 @@ public class GameMap {
             countPosition[i] = new int[col];
             visited[i] = new int[col];
         }
-        dfs(0,0); //遍历整个雷区，得出每个点所对应的地雷个数
+        dfs(0,0); //遍历整个雷区，得出每个点周围所对应的地雷个数
+
+        this.blankPostionList = new ArrayList<>();
+        this.openedBlankPostionList = new ArrayList<>();
+
+        //将所有的空白区域存入链表中
+        for (int i=0; i<row; i++){
+            for (int j=0; j<col; j++){
+                if (map[i][j] == MAP_BLANK){
+                    int pos = i * col + j;
+                    blankPostionList.add(pos);
+                }
+            }
+        }
 
     }
 
@@ -170,10 +197,6 @@ public class GameMap {
 
         if (visited[r][c] == 1) {
             return;
-        }
-
-        if (map[r][c] == MAP_MINE) {
-            countPosition[r][c] ++;
         }
 
         for (int i = 0; i < dir.length; i++) {
@@ -193,6 +216,10 @@ public class GameMap {
             int newCol = c + dir[i][1];
 
             dfs(newRow, newCol);
+        }
+
+        if (map[r][c] == MAP_MINE) {
+            countPosition[r][c] = -1;
         }
 
         return;
@@ -241,8 +268,10 @@ public class GameMap {
         }
 
 
+        //将用户打开的空白区域保存起来
         for (int i=0; i<list.size(); i++){
-            Log.d("wyg1", "circlePos：" + list.get(i));
+            //Log.d("wyg1", "circlePos：" + list.get(i));
+            openedBlankPostionList.add(list.get(i));
         }
 
         return list;
@@ -261,6 +290,18 @@ public class GameMap {
             return countPosition[r][c];
         }else{
             return 0;
+        }
+    }
+
+    /**
+     * 判断所有的空白区域都被打开或者所有的地雷都被标记
+     * @return
+     */
+    public boolean allClear() {
+        if (blankPostionList.size() == openedBlankPostionList.size()) {
+            return true;
+        } else {
+            return false;
         }
     }
 }

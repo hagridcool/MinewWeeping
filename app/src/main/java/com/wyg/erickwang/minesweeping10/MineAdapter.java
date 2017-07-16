@@ -1,11 +1,15 @@
 package com.wyg.erickwang.minesweeping10;
 
+import android.graphics.Color;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,14 +21,23 @@ import java.util.List;
 public class MineAdapter extends RecyclerView.Adapter<MineAdapter.MineViewHolder> {
     private List<String> dataList;
     private ItemClickListener mItemClickListener;
+    private ItemLongClickListener mItemLongClickListener;
     private MineAdapter.MineViewHolder holder;
+    private List<MineViewHolder> holderList;
+
+    private String TAG = "wyg1";
 
     public void motifyPos(int position, int num_mine) {
-        dataList.set(position,num_mine + "");
+         holderList.get(position).tv_mine.setText(num_mine + "");
+         holderList.get(position).tv_mine.setBackgroundColor(Color.WHITE);
 
-        notifyItemChanged(position);
+        Log.d(TAG, "motifyPos: " + position);
     }
 
+    /**
+     * 将雷区数据添加到RecyclerView中
+     * @param newDataset
+     */
     public void motifyDataset(int [][] newDataset) {
         dataList.clear();
 
@@ -34,21 +47,34 @@ public class MineAdapter extends RecyclerView.Adapter<MineAdapter.MineViewHolder
             }
         }
 
-        notifyAll();
+       notifyDataSetChanged();
     }
+
+    public MineAdapter(List<String> dataList){
+        this.dataList = dataList;
+
+        holderList = new ArrayList<>();
+    }
+
+    public void setMineFlag(int position, String s) {
+        holderList.get(position).tv_mine.setText(s);
+    }
+
 
     public interface ItemClickListener{
         void onItemClick(View view,int position);
     }
 
-    public MineAdapter(List<String> dataList){
-        this.dataList = dataList;
+    public interface ItemLongClickListener{
+        void onItemLongClick(View view,int postion);
     }
 
     public void setItemClickListener(ItemClickListener listener){
-        if (listener != null){
-            this.mItemClickListener = listener;
-        }
+        this.mItemClickListener = listener;
+    }
+
+    public void setItemLongClickListener(ItemLongClickListener listener){
+        this.mItemLongClickListener = listener;
     }
 
     @Override
@@ -56,18 +82,42 @@ public class MineAdapter extends RecyclerView.Adapter<MineAdapter.MineViewHolder
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item,parent,false);
         holder = new MineViewHolder(view);
 
+
+        holderList.add(holder);
+
+        Log.d("wyg1", "onCreateViewHolder: holderList.size==" + holderList.size());
+
         return holder;
     }
 
     @Override
-    public void onBindViewHolder(MineAdapter.MineViewHolder holder, int position) {
-        holder.btn_mine.setText(dataList.get(position));
-        holder.btn_mine.setTag(position);
-        holder.btn_mine.setOnClickListener(new View.OnClickListener() {
+    public void onBindViewHolder(MineAdapter.MineViewHolder holder, final int position) {
+        if (dataList.get(position).equals("-1")){
+            holder.tv_mine.setText("");
+        } else {
+            holder.tv_mine.setText(dataList.get(position));
+        }
+
+        //设置控件背景颜色
+        holder.tv_mine.setBackgroundColor(Color.BLUE);
+        holder.tv_mine.setTag(position);
+        holder.tv_mine.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //将按钮点击事件传递到外部，供调用者使用
-                mItemClickListener.onItemClick(view,(int)view.getTag());
+                if (mItemClickListener != null)
+                    mItemClickListener.onItemClick(view,(int)view.getTag());
+            }
+        });
+
+        holder.tv_mine.setLongClickable(true);
+        holder.tv_mine.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                if (mItemLongClickListener != null)
+                    mItemLongClickListener.onItemLongClick(view,(int)view.getTag());
+
+                return true;
             }
         });
 
@@ -79,12 +129,12 @@ public class MineAdapter extends RecyclerView.Adapter<MineAdapter.MineViewHolder
     }
 
     public class MineViewHolder extends RecyclerView.ViewHolder{
-        Button btn_mine;
+        TextView tv_mine;
 
         public MineViewHolder(View itemView) {
             super(itemView);
 
-            btn_mine = itemView.findViewById(R.id.btn_mine);
+            tv_mine = itemView.findViewById(R.id.tv_mine);
         }
     }
 }
