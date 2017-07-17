@@ -44,8 +44,9 @@ public class MainActivity extends AppCompatActivity{
     private int col = 0;
     private int runningTime = 0;
     private List<Integer> recordList;
+    private int []flags;
 
-    private static final int TOTAL_TIME = 100;
+    private static final int TOTAL_TIME = 500;
     private static final String TAG = "wyg1";
 
     @Override
@@ -116,10 +117,24 @@ public class MainActivity extends AppCompatActivity{
             @Override
             public void onItemLongClick(View view, final int postion) {
                 Snackbar.make(view,"设置地雷标记",Snackbar.LENGTH_LONG)
-                        .setAction("插旗", new View.OnClickListener() {
+                        .setAction("插旗/取消插旗", new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
-                                adapter.setMineFlag(postion,"◀▶");
+                                if (flags[postion] == 0) {
+                                    adapter.setMineFlag(postion, "◀▶");
+                                    game.setFlag(postion);
+                                    flags[postion] = 1;
+                                } else {
+                                    flags[postion] = 0;
+                                    adapter.setMineFlag(postion, "");
+                                    game.cancelFlag(postion);
+                                }
+
+
+                                //当把所有的地雷都标记出来后表示游戏成功
+                                if (game.setFlags()){
+                                    showSuccessInfo();
+                                }
                             }
                         }).show();
             }
@@ -250,6 +265,7 @@ public class MainActivity extends AppCompatActivity{
                 tv_showTime.setText(runningTime + "");
                 handler.postDelayed(runnable,1000);
 
+                flags = new int[row * col];
 
             }
         });
@@ -263,6 +279,7 @@ public class MainActivity extends AppCompatActivity{
                     MainActivity.this.finish();
             }
         });
+
 
 
     }

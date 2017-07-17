@@ -5,6 +5,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -27,12 +28,15 @@ public class GameMap {
     private int countMine = 0; //地雷总数目
     private List<Integer> blankPostionList; //保存地图中所有的空白位置
     private List<Integer> openedBlankPostionList; //保存所有被打开的位置
+    private List<Integer> allMineList; //记录所有有地雷的位置
+    private List<Integer> flagList; //记录所有插旗的位置
 
     static int dir[][]=new int[][]{{-1,-1},{-1,0},{-1,1},{0,-1},{0,1},{1,-1},{1,0},{1,1}};
     static int searchDir[][]=new int[][]{{-1,0},{0,-1},{0,1},{1,0}};
     public static final int MAP_MINE = 0; //表示有地雷
     public static final int MAP_BLANK = 1; //表示没有地雷，只是空白
     public static final int MAP_FLAG = 3; //表示插上小红旗
+    private int flag;
 
     public GameMap(){}
 
@@ -188,6 +192,21 @@ public class GameMap {
             }
         }
 
+        allMineList = new ArrayList<>();
+        flagList = new ArrayList<>();
+
+        //将雷区中所有含有地雷的点记录下来
+        for (int i=0; i<row; i++){
+            for (int j=0; j<col; j++){
+                if (map[i][j] == MAP_MINE){
+                    int pos = i * col + j;
+
+                    allMineList.add(pos);
+                }
+            }
+        }
+
+        return;
     }
 
     public void dfs(int r,int c){
@@ -302,6 +321,33 @@ public class GameMap {
             return true;
         } else {
             return false;
+        }
+    }
+
+    public boolean setFlags() {
+        if (flagList.size() != allMineList.size())
+            return false;
+
+        for (int j=0; j<flagList.size(); j++){
+            if (! allMineList.contains(flagList.get(j))){
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public void setFlag(int postion) {
+        flagList.add(postion);
+    }
+
+    public void cancelFlag(int postion) {
+        Iterator<Integer> it = flagList.iterator();
+        while (it.hasNext()){
+            int pos = it.next();
+            if (pos == postion){
+                it.remove();
+            }
         }
     }
 }

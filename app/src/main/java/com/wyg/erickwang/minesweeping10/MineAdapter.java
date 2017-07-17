@@ -58,6 +58,7 @@ public class MineAdapter extends RecyclerView.Adapter<MineAdapter.MineViewHolder
 
     public void setMineFlag(int position, String s) {
         holderList.get(position).tv_mine.setText(s);
+        holderList.get(position).tv_mine.setTextColor(Color.RED);
     }
 
 
@@ -85,21 +86,23 @@ public class MineAdapter extends RecyclerView.Adapter<MineAdapter.MineViewHolder
 
         holderList.add(holder);
 
-        Log.d("wyg1", "onCreateViewHolder: holderList.size==" + holderList.size());
+        //Log.d("wyg1", "onCreateViewHolder: holderList.size==" + holderList.size());
 
         return holder;
     }
 
     @Override
     public void onBindViewHolder(MineAdapter.MineViewHolder holder, final int position) {
-        if (dataList.get(position).equals("-1")){
-            holder.tv_mine.setText("");
-        } else {
-            holder.tv_mine.setText(dataList.get(position));
-        }
+//        if (dataList.get(position).equals("-1")){
+//            holder.tv_mine.setText("");
+//        } else {
+//            holder.tv_mine.setText(dataList.get(position));
+//        }
 
+        holder.tv_mine.setText("");
         //设置控件背景颜色
         holder.tv_mine.setBackgroundColor(Color.BLUE);
+        //holder.tv_mine.setBackgroundColor(Color.BLACK);
         holder.tv_mine.setTag(position);
         holder.tv_mine.setOnClickListener(new View.OnClickListener() {
             @Override
