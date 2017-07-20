@@ -1,6 +1,8 @@
 package com.wyg.erickwang.minesweeping10;
 
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Handler;
 import android.support.design.widget.Snackbar;
@@ -8,6 +10,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -28,6 +31,11 @@ import java.util.Comparator;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity{
+    private static final int TOTAL_TIME = 500;
+    private static final String TAG = "wyg1";
+    private static final int FIRST_START = 0; //第一次启动游戏
+    private static final int MENU_START = 1234; //从菜单启动游戏
+
     private TextView tv_cntMine;
     private TextView tv_showTime;
     private TextView tv_record;
@@ -35,19 +43,19 @@ public class MainActivity extends AppCompatActivity{
 
     private MineAdapter adapter;
     private List<String> dataList;
+    private RecyclerView.LayoutManager layoutManager;
+    private GameMap game;
     private int [][]map;
     private int [][]countPosition; //用于记录每个点周围总的地雷数
-    private GameMap game;
-    private RecyclerView.LayoutManager layoutManager;
+
     private int cntMine = 0; //雷区地雷个数
     private int row = 0;
     private int col = 0;
     private int runningTime = 0;
     private List<Integer> recordList;
     private int []flags;
+    private SharedPreferences recordSharedPre;
 
-    private static final int TOTAL_TIME = 500;
-    private static final String TAG = "wyg1";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,21 +72,110 @@ public class MainActivity extends AppCompatActivity{
 
         recordList = new ArrayList<Integer>();
 
-        initGame(0);
+        initGame(FIRST_START);
 
+        recordSharedPre = getSharedPreferences("record_list", Context.MODE_PRIVATE);
+        int totalRecordNum = recordSharedPre.getInt("totalRecordNum",0);
+
+        if (totalRecordNum != 0){
+           for (int i=0; i<totalRecordNum; i++){
+               recordList.add(recordSharedPre.getInt(i+"",0));
+           }
+            String recordStr = "游戏排名：\n";
+            for (int k=0; k<(recordList.size()>=10?10:recordList.size()); k++){
+                recordStr +="第" + (k+1) + "名：" + recordList.get(k) + " s\n";
+            }
+            tv_record.setText(recordStr);
+
+        }
     }
 
-    private void showGame(int col) {
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerView_mine);
-        adapter = new MineAdapter(dataList);
+    /**
+     * 从输入对话框中获取雷区的行、列以及地雷个数，对游戏初始化
+     * @param flag 0：表示第一次启动游戏； 非0：表示从菜单启动游戏
+     */
+    private void initGame(final int flag){
+        final View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog,null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(dialogView);
+        final EditText et_row = dialogView.findViewById(R.id.et_row);
+        final EditText et_col = dialogView.findViewById(R.id.et_col);
+        final EditText et_cnt = dialogView.findViewById(R.id.et_cnt);
+        Button btn_begin = dialogView.findViewById(R.id.btn_begin);
+        Button btn_cancel = dialogView.findViewById(R.id.btn_cancel);
+
+        builder = builder.setCancelable(false);
+
+        final AlertDialog dialog = builder.create();
+        dialog.show();
+
+        btn_begin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                row = Integer.parseInt(et_row.getText().toString().trim());
+                col = Integer.parseInt(et_col.getText().toString().trim());
+                cntMine = Integer.parseInt(et_cnt.getText().toString().trim());
+
+                if (row <= 0 || col <= 0){
+                    Toast.makeText(MainActivity.this,"请输入大于0的整数",Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (cntMine > row * col){
+                    Toast.makeText(MainActivity.this,"请输入地雷个数",Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                Log.d("wyg1",et_row.getText().toString().trim() + " x " + et_col.getText().toString().trim());
+
+                dialog.cancel();
+
+                initGameData(row,col);
+                showGame();
+
+                img_flag.setImageResource(R.drawable.img_ingame);
+                runningTime = 0;
+                handler.removeCallbacks(runnable);
+
+                tv_cntMine.setText(game.getCntMine() + "");
+                tv_showTime.setText(runningTime + "");
+                handler.postDelayed(runnable,1000);
+
+                flags = new int[row * col];
+
+            }
+        });
+
+        btn_cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.cancel();
+
+                if (flag == 0) //第一次打开游戏
+                    MainActivity.this.finish();
+            }
+        });
+    }
+
+    private void showGame() {
+        //生成游戏地图等相关操作
+        game = new GameMap(this,row,col,cntMine);
+        game.trvalMap();
+        this.countPosition = game.getCountPosition();
+
+        //设置RecyclerView的相关操作
+        final RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerView_mine);
+        adapter = new MineAdapter(this,game,dataList,row,col,cntMine);
         layoutManager = new GridLayoutManager(this,col);
-        //recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
+
+        adapter.motifyDataset(this.countPosition); //更新适配器的数据
+
+        //设置Adapter的监听器，执行点击操作
         adapter.setItemClickListener(new MineAdapter.ItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-                //Toast.makeText(MainActivity.this,dataList.get(position),Toast.LENGTH_SHORT).show();
                 if (game.isMine(position)){
                     view.setBackgroundColor(Color.RED);
                     img_flag.setImageResource(R.drawable.img_failed);
@@ -87,27 +184,26 @@ public class MainActivity extends AppCompatActivity{
                     showFailedInfo();
                     Log.d(TAG, "雷:" + position);
                 } else {
-                    view.setVisibility(View.INVISIBLE);
-
-                    List<Integer> posList;
+                    List<Integer> posList = new ArrayList();
+                    posList.clear();
                     posList = game.getCircleBlank(position);
 
-                    for (int i=0; i<posList.size(); i++){
-                        View v = layoutManager.getChildAt(posList.get(i));
-                        //v.setVisibility(View.INVISIBLE);
-                        int num_mine = game.getNumOfMine(posList.get(i));
-                        adapter.motifyPos(posList.get(i),num_mine);
-                        //v.setVisibility(View.INVISIBLE);
-                    }
-                    posList.clear();
 
-                    if (game.allClear()) {
+
+                    for (int i=0; i<posList.size(); i++) {
+                        int pos = posList.get(i);
+                        int num_mine = game.getNumOfMine(pos);
+
+                        if (layoutManager.findViewByPosition(pos) != null){
+                            adapter.motifyPos(num_mine, pos);
+                        }
+                    }
+                    if(game.allClear()){
                         recordList.add(runningTime);
                         handler.removeCallbacks(runnable);
 
                         showSuccessInfo();
                     }
-
                     Log.d(TAG, "无雷" + position);
                 }
             }
@@ -115,50 +211,60 @@ public class MainActivity extends AppCompatActivity{
 
         adapter.setItemLongClickListener(new MineAdapter.ItemLongClickListener() {
             @Override
-            public void onItemLongClick(View view, final int postion) {
-                Snackbar.make(view,"设置地雷标记",Snackbar.LENGTH_LONG)
-                        .setAction("插旗/取消插旗", new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
+            public boolean onItemLongClick(View view, final int postion) {
+//                if (flags[postion] == 0) {
+//                    flags[postion] = 1;
+//                    adapter.setMineFlag(postion, 1);
+//                    game.setFlag(postion);
+//                }
+//                else if (flags[postion] == 1){
+//                    flags[postion] = 0;
+//                    adapter.setMineFlag(postion, 0);
+//                    game.cancelFlag(postion);
+//                }
+//
+//                if (game.setFlags()){
+//                    showSuccessInfo();
+//                }
+                PopupMenu popupMenu = new PopupMenu(MainActivity.this,view);
+                popupMenu.getMenuInflater().inflate(R.menu.pupo_menu,popupMenu.getMenu());
+                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        switch (item.getItemId()){
+                            case R.id.insert_flag:
                                 if (flags[postion] == 0) {
-                                    adapter.setMineFlag(postion, "◀▶");
-                                    game.setFlag(postion);
                                     flags[postion] = 1;
+                                    adapter.setMineFlag(postion, 1);
+                                    game.setFlag(postion);
                                 } else {
+                                    Toast.makeText(MainActivity.this,"已经标记红旗",Toast.LENGTH_SHORT).show();
+                                }
+                                break;
+                            case R.id.cancel_flag:
+                                if (flags[postion] == 1){
                                     flags[postion] = 0;
-                                    adapter.setMineFlag(postion, "");
+                                    adapter.setMineFlag(postion, 0);
                                     game.cancelFlag(postion);
+                                }  else {
+                                    Toast.makeText(MainActivity.this,"无红旗标记",Toast.LENGTH_SHORT).show();
                                 }
+                                break;
+                            default:
+                        }
+                        return true;
+                    }
+                });
+                popupMenu.show();
 
-
-                                //当把所有的地雷都标记出来后表示游戏成功
-                                if (game.setFlags()){
-                                    showSuccessInfo();
-                                }
-                            }
-                        }).show();
+                return true;
             }
-        });
-
-
-    }
-
-    private void sweeping() {
-        game = new GameMap(this,row,col,cntMine);
-        map = game.getMap();
-        game.trvalMap();
-        countPosition = game.getCountPosition();
-
-        if (countPosition == null){
-            Log.d(TAG, "countPosition == null");
-        } else {
-            adapter.motifyDataset(countPosition);
-        }
+       });
     }
 
     private void showSuccessInfo(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder = builder.setCancelable(true);
+        builder = builder.setCancelable(false);
         builder = builder.setTitle("提示");
         builder = builder.setMessage("恭喜你找到了所有雷，游戏胜利");
         builder = builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
@@ -200,7 +306,7 @@ public class MainActivity extends AppCompatActivity{
         builder = builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                initGame(0);
+                initGame(FIRST_START);
             }
         });
 
@@ -215,75 +321,6 @@ public class MainActivity extends AppCompatActivity{
         builder.create().show();
     }
 
-    private void initGame(final int flag){
-        final View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog,null);
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setView(dialogView);
-        final EditText et_row = dialogView.findViewById(R.id.et_row);
-        final EditText et_col = dialogView.findViewById(R.id.et_col);
-        final EditText et_cnt = dialogView.findViewById(R.id.et_cnt);
-        Button btn_begin = dialogView.findViewById(R.id.btn_begin);
-        Button btn_cancel = dialogView.findViewById(R.id.btn_cancel);
-
-        builder = builder.setCancelable(false);
-
-        final AlertDialog dialog = builder.create();
-        dialog.show();
-
-        btn_begin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                row = Integer.parseInt(et_row.getText().toString().trim());
-                col = Integer.parseInt(et_col.getText().toString().trim());
-                cntMine = Integer.parseInt(et_cnt.getText().toString().trim());
-
-                if (row <= 0 || col <= 0){
-                    Toast.makeText(MainActivity.this,"请输入大于0的整数",Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                if (cntMine > row * col){
-                    Toast.makeText(MainActivity.this,"请输入地雷个数",Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                Log.d("wyg1",et_row.getText().toString().trim() + " x " + et_col.getText().toString().trim());
-
-                dialog.cancel();
-
-                initGameData(row,col);
-                showGame(col);
-                sweeping();
-
-                img_flag.setImageResource(R.drawable.img_ingame);
-
-
-                runningTime = 0;
-                handler.removeCallbacks(runnable);
-
-                tv_cntMine.setText(game.getCntMine() + "");
-                tv_showTime.setText(runningTime + "");
-                handler.postDelayed(runnable,1000);
-
-                flags = new int[row * col];
-
-            }
-        });
-
-        btn_cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.cancel();
-
-                if (flag == 0) //第一次打开游戏
-                    MainActivity.this.finish();
-            }
-        });
-
-
-
-    }
-
     private void initGameData(int row,int col) {
         dataList = new ArrayList<>();
 
@@ -292,6 +329,18 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        SharedPreferences.Editor editor = recordSharedPre.edit();
+
+        for (int i=0; i<recordList.size(); i++){
+            editor.putInt(i+"",recordList.get(i));
+        }
+        editor.putInt("totalRecordNum",recordList.size());
+        editor.commit();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -304,11 +353,11 @@ public class MainActivity extends AppCompatActivity{
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.menu_setting:
-                initGame(2);
+                initGame(MENU_START);
                 break;
             case R.id.menu_close:
-                MainActivity.this.finish();
-                break;
+            MainActivity.this.finish();
+            break;
             default:
         }
 
@@ -316,7 +365,7 @@ public class MainActivity extends AppCompatActivity{
     }
 
     /**
-     * 设计实现倒计时
+     * 设计实现计时
      */
     Handler handler = new Handler();
     Runnable runnable = new Runnable() {

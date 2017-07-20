@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@android:color/transparent"
     >
 
     <TextView
@@ -16,29 +17,30 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        >
+        android:background="@null"
+        android:orientation="horizontal">
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="20dp"
             android:text="雷区行数："
-            />
+            android:textSize="20dp" />
+
         <EditText
             android:id="@+id/et_row"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="number"
-            android:textSize="20sp"
-            android:text="6"
             android:hint="请输入正整数"
-            />
+            android:inputType="number"
+            android:text="6"
+            android:textSize="20sp" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:background="@null"
         >
         <TextView
             android:layout_width="wrap_content"
@@ -60,6 +62,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:background="@android:color/transparent"
         >
         <TextView
             android:layout_width="wrap_content"
@@ -81,6 +84,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:background="@null"
         android:gravity="center"
         >
         <Button
@@ -89,6 +93,7 @@
             android:layout_height="wrap_content"
             android:text="取消"
             android:textSize="20dp"
+            android:background="@android:color/transparent"
             />
         <Button
             android:id="@+id/btn_begin"
@@ -97,6 +102,7 @@
             android:inputType="number"
             android:textSize="20dp"
             android:text="开始游戏"
+            android:background="@android:color/transparent"
             />
     </LinearLayout>
 </LinearLayout>

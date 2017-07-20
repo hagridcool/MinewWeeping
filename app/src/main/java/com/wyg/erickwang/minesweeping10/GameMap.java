@@ -10,7 +10,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Random;
-
 /**
  * Created by Erick on 2017/7/14 0014.
  * Email: jsp_103@163.com
@@ -37,6 +36,8 @@ public class GameMap {
     public static final int MAP_BLANK = 1; //表示没有地雷，只是空白
     public static final int MAP_FLAG = 3; //表示插上小红旗
     private int flag;
+
+    private String TAG = "wyg1";
 
     public GameMap(){}
 
@@ -248,7 +249,14 @@ public class GameMap {
         return map;
     }
 
+    //返回每个点所对应的周围地雷数
     public int[][] getCountPosition() {
+        for (int i=0; i<countPosition.length; i++){
+            for (int j=0; j<countPosition[i].length; j++){
+                //Log.d(TAG, "getCountPosition: " + countPosition[i][j]);
+            }
+        }
+
         return countPosition;
     }
 
@@ -305,11 +313,11 @@ public class GameMap {
         int r = postion / col;
         int c = postion % col;
 
-        if (countPosition[r][c] != 0){
+        if (countPosition[r][c] != -1){
             return countPosition[r][c];
-        }else{
-            return 0;
         }
+
+        return 0;
     }
 
     /**
@@ -324,6 +332,10 @@ public class GameMap {
         }
     }
 
+    /**
+     * 如果所有地雷都被红旗标注，则返回true
+     * @return
+     */
     public boolean setFlags() {
         if (flagList.size() != allMineList.size())
             return false;

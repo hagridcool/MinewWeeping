@@ -2,31 +2,36 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
     android:layout_width="match_parent"
-    android:layout_height="80dp">
+    android:layout_height="80dp"
+    android:gravity="center"
+    >
     <TextView
         android:id="@+id/tv_showTime"
-        android:layout_width="100dp"
+        android:layout_width="160dp"
         android:layout_height="80dp"
         android:gravity="center"
-        android:text="显示时间"
-        android:textSize="20sp"
+        android:text="时间"
+        android:textSize="60sp"
+        android:background="@drawable/my_circle"
+        android:textColor="#ffffff"
         />
     <ImageView
         android:id="@+id/img_flag"
-        android:layout_width="0dp"
+        android:layout_width="80dp"
         android:layout_height="80dp"
         android:src="@drawable/img_ready"
         android:contentDescription="显示图片表示成功或失败"
-        android:layout_weight="1"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         />
 
     <TextView
         android:id="@+id/tv_cntMine"
-        android:layout_width="0dp"
-        android:layout_height="80dp"
+        android:layout_width="120dp"
+        android:layout_height="75dp"
+        android:background="@drawable/my_circle"
         android:gravity="center"
-        android:text="显示地雷个数"
-        android:layout_weight="1"
-        android:textSize="20sp"
-        />
+        android:text="地雷数"
+        android:textColor="#ffffff"
+        android:textSize="50sp" />
 </LinearLayout>
