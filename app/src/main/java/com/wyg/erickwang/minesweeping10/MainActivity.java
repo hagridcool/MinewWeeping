@@ -45,7 +45,6 @@ public class MainActivity extends AppCompatActivity{
     private List<String> dataList;
     private RecyclerView.LayoutManager layoutManager;
     private GameMap game;
-    private int [][]map;
     private int [][]countPosition; //用于记录每个点周围总的地雷数
 
     private int cntMine = 0; //雷区地雷个数
@@ -212,20 +211,6 @@ public class MainActivity extends AppCompatActivity{
         adapter.setItemLongClickListener(new MineAdapter.ItemLongClickListener() {
             @Override
             public boolean onItemLongClick(View view, final int postion) {
-//                if (flags[postion] == 0) {
-//                    flags[postion] = 1;
-//                    adapter.setMineFlag(postion, 1);
-//                    game.setFlag(postion);
-//                }
-//                else if (flags[postion] == 1){
-//                    flags[postion] = 0;
-//                    adapter.setMineFlag(postion, 0);
-//                    game.cancelFlag(postion);
-//                }
-//
-//                if (game.setFlags()){
-//                    showSuccessInfo();
-//                }
                 PopupMenu popupMenu = new PopupMenu(MainActivity.this,view);
                 popupMenu.getMenuInflater().inflate(R.menu.pupo_menu,popupMenu.getMenu());
                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
@@ -251,6 +236,10 @@ public class MainActivity extends AppCompatActivity{
                                 }
                                 break;
                             default:
+                        }
+
+                        if (game.setFlags()){
+                            showSuccessInfo();
                         }
                         return true;
                     }

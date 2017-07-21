@@ -277,8 +277,6 @@ public class GameMap {
             int r = pos / col;
             int c = pos % col;
 
-            Log.d("wyg1","current pos:" + postion + ":" + r +"x" + c);
-
             for (int i=0; i<searchDir.length; i++){
                 int newRow = r + searchDir[i][0];
                 int newCol = c + searchDir[i][1];

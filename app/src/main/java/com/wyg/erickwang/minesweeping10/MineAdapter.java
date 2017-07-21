@@ -3,7 +3,6 @@ package com.wyg.erickwang.minesweeping10;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,10 +51,7 @@ public class MineAdapter extends RecyclerView.Adapter<MineAdapter.MineViewHolder
     public void motifyPos(int cntMine,int postion) {
         flagState = CLICK_SWEEPING;
 
-        //dataList.set(postion,cntMine+"");
-
         notifyItemChanged(postion);
-        //Log.d(TAG, "motifyPos: 444444444444444444444->" + postion);
     }
 
     public void setMineFlag(int postion, int insertFlag) {
@@ -118,14 +114,14 @@ public class MineAdapter extends RecyclerView.Adapter<MineAdapter.MineViewHolder
             } else {
                 holder.tv_mine.setText(dataList.get(position));
             }
-            //holder.tv_mine.setText("");
+            holder.tv_mine.setText("");
             holder.tv_mine.setBackgroundColor(Color.GRAY);
             //holder.tv_mine.setBackgroundColor(Color.BLACK);
             holder.tv_mine.setTag(position);
         } else if (flagState == CLICK_SWEEPING){
             if (!game.isMine(position)) {
                 holder.tv_mine.setText(dataList.get(position) + "");
-                holder.tv_mine.setBackgroundColor(Color.BLUE);
+                holder.tv_mine.setBackgroundColor(Color.WHITE);
                 holder.tv_mine.setEnabled(false);
             }
         } else if (flagState == CLICK_LONG){
@@ -183,14 +179,6 @@ public class MineAdapter extends RecyclerView.Adapter<MineAdapter.MineViewHolder
         public MineViewHolder(View itemView) {
             super(itemView);
             tv_mine = itemView.findViewById(R.id.tv_mine);
-        }
-
-        public void setTag(int tag){
-            this.tag = tag;
-        }
-
-        public int getTag(){
-            return tag;
         }
     }
 }
